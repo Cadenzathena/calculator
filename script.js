@@ -35,6 +35,7 @@ function inputListener() {
 
         digitLogger();
         operatorLogger();
+        backspaceHelper();
 
 
 
@@ -61,6 +62,19 @@ function inputListener() {
                 }
                 omegaArr[omegaArr.length - 1].push(e.key);
                 console.log(omegaArr);
+            }
+        }
+
+
+
+        function backspaceHelper() {
+            if (e.key === 'Backspace') {
+                omegaArr[omegaArr.length - 1].pop();
+
+            if (!omegaArr[omegaArr.length - 1].length) {
+                omegaArr.pop();
+            }
+            console.log(omegaArr);
             }
         }
 
