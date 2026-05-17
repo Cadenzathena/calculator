@@ -15,18 +15,16 @@ function inputSanitizer() {
 }
 
 
-
+// handles various actions when an input is made with the input field in focus.
 function inputListener() {
     calcDisplayField.addEventListener("keydown", (e) => {
         if (e.target.value === '0' &&
-            e.key.split('').some(item => allValidInputs.includes(item))) {
-
+            e.key.split('').some(item => validDigits.includes(item))) {
             e.target.value = e.target.value.replace('0', '');
-
         }
 
 
-
+        // create a new array in omegaArr if it is empty!
         if (!omegaArr.length) {
             omegaArr.push([]);
         }
@@ -38,35 +36,47 @@ function inputListener() {
         backspaceHelper();
 
 
-
+        // Checks if the key pressed is a number and pushes the value to the last array in
+        // omegaArr. Also check if the most recent array in omegaArr contains an
+        // operator. True? generate a new array for only numbers.
         function digitLogger() {
             if (e.key.split('').some(item => validDigits.includes(item))) {
                 if (omegaArr[omegaArr.length - 1].some(item => validOperators.includes(item))) {
-
                     omegaArr.push([]);
-
                 }
+
                 omegaArr[omegaArr.length - 1].push(e.key);
                 console.log(omegaArr);
             }
         }
 
 
-
+        // Checks if the key pressed is an operator and pushes the value to the last array in
+        // omegaArr. Also check if the most recent array in omegaArr contains a
+        // number. True? generate a new array for only operators.
         function operatorLogger() {
             if (e.key.split('').some(item => validOperators.includes(item))) {
-                if (omegaArr[omegaArr.length - 1].some(item => validDigits.includes(item))) {
 
-                    omegaArr.push([]);
-
+                // if the user inputs an operator while only 0 is in the input field,
+                // add zero to an array quickly before adding the operator to its own array.
+                if (e.target.value === '0' &&
+                    !omegaArr[omegaArr.length - 1].length
+                ) {
+                    omegaArr[omegaArr.length - 1].push('0');
                 }
+
+                if (omegaArr[omegaArr.length - 1].some(item => validDigits.includes(item))) {
+                    omegaArr.push([]);
+                }
+
                 omegaArr[omegaArr.length - 1].push(e.key);
                 console.log(omegaArr);
             }
         }
 
 
-
+        // Deletes array items. Also helps clean up arrays in
+        // omegaArr if they're empty after deletion
         function backspaceHelper() {
             if (e.key === 'Backspace') {
                 omegaArr[omegaArr.length - 1].pop();
