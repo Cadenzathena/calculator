@@ -3,6 +3,7 @@ const calcDisplayField = document.querySelector("#calc-display-field");
 const allValidInputs = '0123456789+-/*';
 const validDigits = '0123456789';
 const validOperators = '-+*/';
+const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
 
 
@@ -30,8 +31,17 @@ function inputListener() {
             omegaArr.push([]);
         }
 
-        if (calcDisplayField.selectionStart < calcDisplayField.value.length) {
+        // if the user trys to input a value when the cursor isn't at the end,
+        // send their cursor to the end and halt. Not trying to deal with custom array insertion
+        // shenanigans
+        if (calcDisplayField.selectionStart === calcDisplayField.value.length && e.key.split().some(item => arrowKeys.includes(item))) {
             e.preventDefault();
+            console.log('Arrow catch!');
+            return;
+        }
+        else if (calcDisplayField.selectionStart < calcDisplayField.value.length) {
+            e.preventDefault();
+            calcDisplayField.setSelectionRange(calcDisplayField.value.length, calcDisplayField.value.length);
             console.log('YAHTZEE');
             return;
         }
@@ -67,8 +77,9 @@ function inputListener() {
                     omegaArr.push([]);
                 }
 
-                // the below code handles standard calculator operator behaviour if an operator is the current input.
+                // the below if block handles standard calculator operator behaviour if an operator is the current input.
                 if (omegaArr[omegaArr.length - 1].length == 2 && omegaArr[omegaArr.length - 1].some(item => validOperators.includes(item))) {
+
                     omegaArr[omegaArr.length - 1].splice(0, omegaArr[omegaArr.length - 1].length);
                     omegaArr[omegaArr.length - 1].push(e.key);
                     console.log(omegaArr);
