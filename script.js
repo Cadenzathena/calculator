@@ -14,6 +14,15 @@ function inputSanitizer() {
         e.target.value = e.target.value.replace(/[^0-9+\-*×/]/g, '');
         e.target.value = e.target.value.replace('*', '×');
     })
+
+    calcDisplayField.addEventListener("keydown", e => {
+        if (e.target.value.split('').some(item => validOperators.includes(item))) {
+            if ((calcDisplayField.value.endsWith('×-') || calcDisplayField.value.endsWith('/-')) && e.key.split().some(item => validOperators.includes(item))) {
+                calcDisplayField.value = calcDisplayField.value.slice(0, -2);
+                console.log('gotcha');
+            }
+        }
+    })
 }
 
 
@@ -78,7 +87,7 @@ function inputListener() {
                 }
 
                 // the below if block handles standard calculator operator behaviour if an operator is the current input.
-                if (omegaArr[omegaArr.length - 1].length == 2 && omegaArr[omegaArr.length - 1].some(item => validOperators.includes(item))) {
+                if (omegaArr[omegaArr.length - 1].length === 2 && omegaArr[omegaArr.length - 1].some(item => validOperators.includes(item))) {
 
                     omegaArr[omegaArr.length - 1].splice(0, omegaArr[omegaArr.length - 1].length);
                     omegaArr[omegaArr.length - 1].push(e.key);
