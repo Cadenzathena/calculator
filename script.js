@@ -20,6 +20,7 @@ function inputSanitizer() {
 // handles various actions when an input is made with the input field in focus.
 function inputListener() {
     calcDisplayField.addEventListener("keydown", (e) => {
+        // get rid of initial 0 if a number is pressed
         if (e.target.value === '0' && e.key.split('').some(item => validDigits.includes(item))) {
             e.target.value = e.target.value.replace('0', '');
         }
@@ -27,6 +28,12 @@ function inputListener() {
         // create a new array in omegaArr if it is empty!
         if (!omegaArr.length) {
             omegaArr.push([]);
+        }
+
+        if (calcDisplayField.selectionStart < calcDisplayField.value.length) {
+            e.preventDefault();
+            console.log('YAHTZEE');
+            return;
         }
 
 
@@ -88,7 +95,7 @@ function inputListener() {
                     return;
                 }
                 
-                omegaArr[omegaArr.length - 1].push(e.key);
+                omegaArr[omegaArr.length - 1].push(e.key); // This only runs when a fresh, empty array is current
                 console.log(omegaArr);
             }
         })();
