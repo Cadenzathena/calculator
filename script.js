@@ -1,4 +1,5 @@
 const calcDisplayField = document.querySelector("#calc-display-field");
+const calcDisplayContainer = document.querySelector("#calc-display-container");
 const omegaArr = [];
 let currentArr = [];
 const validNumbers = '0123456789';
@@ -98,7 +99,8 @@ function inputListener() {
     calcDisplayField.addEventListener("keydown", (e) => {
         // create a new array in omegaArr if it is empty!
         if (!omegaArr.length) {
-            omegaArr.push(currentArr);
+            omegaArr.push([]);
+            currentArr = omegaArr[omegaArr.length - 1];
         }
 
         // Checks if the key pressed is a number and pushes the value to the last array in
@@ -129,7 +131,8 @@ function inputListener() {
                     currentArr = omegaArr[omegaArr.length - 1];
                 }
 
-                // the below if block handles standard calculator operator behaviour if an operator is the current input.
+                // the below if blocks handle standard calculator operator
+                // behaviour if an operator is the current input.
                 if (currentArr.length === 2 &&
                     containsOperators(currentArr)) {
 
@@ -174,15 +177,28 @@ function inputListener() {
                 e.preventDefault();
                 return;
             }
-            else if (e.key === 'Backspace') {
+            if (e.key === 'Backspace') {
                 currentArr.pop();
 
                 if (!currentArr.length) {
                     omegaArr.pop();
+                    currentArr = omegaArr[omegaArr.length - 1];
                 }
                 console.log(omegaArr);
             }
         })();
+
+    })
+}
+
+
+
+
+
+function solveExpression() {
+    calcDisplayContainer.addEventListener("submit", e => {
+        e.preventDefault();
+        console.log('expression');
     })
 }
 
@@ -190,3 +206,4 @@ function inputListener() {
 
 inputListener();
 inputSanitizer();
+solveExpression();
