@@ -5,6 +5,8 @@ const validNumbers = '0123456789';
 const validOperators = '-+*/';
 const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
+// we are going to be checking for numbers and operators for
+// a bit. functions help reduce wordy syntax.
 function containsNumbers(item) {
     if (typeof item === 'string') {
         return item.split('').some(item => validNumbers.includes(item));
@@ -27,51 +29,43 @@ function containsOperators(item) {
 
 
 
-// Ensures the input field doesn't accept values that aren't numbers or operators.
-// Replaces * with × for aesthetics.
 function inputSanitizer() {
 
     calcDisplayField.addEventListener("input", e => {
-        e.target.value = e.target.value.replace(/[^0-9+\-*×/]/g, '');
-        e.target.value = e.target.value.replace('*', '×');
+        // Ensures the input field doesn't accept values that aren't
+        // numbers or operators. Replaces * with × for aesthetics.
+        e.target.value = e.target.value.replace(/[^0-9+\-*×/]/g, ''); 
+        e.target.value = e.target.value.replace('*', '×');            
     })
 
-
-
-
-
-
     calcDisplayField.addEventListener("keydown", e => {
-        if (containsOperators(e.target.value)) {
-            if (containsOperators(e.key) &&
-               (calcDisplayField.value.endsWith('×-') || calcDisplayField.value.endsWith('/-'))) {
-                
+        if (e.target.value === '0' && containsNumbers(e.key)) {
+
+            e.target.value = e.target.value.replace('0', ''); // get rid of initial 0 if a number is pressed
+        }
+
+        // Handles operator behaviour in the input field. Things like preventing
+        // multiple operators except for *- and /-
+        if (containsOperators(e.key)) {
+            if (calcDisplayField.value.endsWith('×-') ||
+                calcDisplayField.value.endsWith('/-')) {
+
                 calcDisplayField.value = calcDisplayField.value.slice(0, -2);
                 console.log('gotcha');
             }
-        }
-    })
+            else if (calcDisplayField.value.endsWith('+') ||
+                     calcDisplayField.value.endsWith('-')) {
 
-}
-
-
-
-
-
-// handles various actions when an input is made with the input field in focus.
-function inputListener() {
-
-    calcDisplayField.addEventListener("keydown", (e) => {
-        // get rid of initial 0 if a number is pressed
-        if (e.target.value === '0' &&
-           (containsNumbers(e.key) || containsOperators(e.key))) {
-
-            e.target.value = e.target.value.replace('0', '');
-        }
-
-        // create a new array in omegaArr if it is empty!
-        if (!omegaArr.length) {
-            omegaArr.push(currentArr);
+                calcDisplayField.value = calcDisplayField.value.slice(0, -1);
+                console.log('gotcha');
+            }
+            else if (e.key !== '-' &&
+                    (calcDisplayField.value.endsWith('×') ||
+                     calcDisplayField.value.endsWith('/'))) {
+                
+                calcDisplayField.value = calcDisplayField.value.slice(0, -1);
+                console.log('gotcha');
+            }
         }
 
         // if the user trys to input a value when the cursor isn't at the end,
@@ -91,9 +85,21 @@ function inputListener() {
             return;
         }
 
+    })
+}
 
-        
 
+
+
+
+// handles various actions when an input is made with the input field in focus.
+function inputListener() {
+
+    calcDisplayField.addEventListener("keydown", (e) => {
+        // create a new array in omegaArr if it is empty!
+        if (!omegaArr.length) {
+            omegaArr.push(currentArr);
+        }
 
         // Checks if the key pressed is a number and pushes the value to the last array in
         // omegaArr. Also check if the most recent array in omegaArr contains an
@@ -109,10 +115,6 @@ function inputListener() {
                 console.log(omegaArr);
             }
         })();
-
-
-
-
 
         // Checks if the key pressed is an operator and pushes the value to the last array in
         // omegaArr for a fresh array.
@@ -165,14 +167,14 @@ function inputListener() {
             }
         })();
 
-
-
-
-
         // Deletes array items. Also helps clean up arrays in
         // omegaArr if they're empty after deletion
         (function backspaceHelper() {
-            if (e.key === 'Backspace') {
+            if (e.key === 'Backspace' && e.ctrlKey) {
+                e.preventDefault();
+                return;
+            }
+            else if (e.key === 'Backspace') {
                 currentArr.pop();
 
                 if (!currentArr.length) {
