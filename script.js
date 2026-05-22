@@ -1,7 +1,10 @@
 const calcDisplayField = document.querySelector("#calc-display-field");
 const calcDisplayContainer = document.querySelector("#calc-display-container");
 const omegaArr = [];
+let evalOmegaArr = [];
 let currentArr = [];
+const evalNumberArr = [];
+const evalOperatorArr = [];
 const validNumbers = '0123456789';
 const validOperators = '-+*/';
 const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
@@ -114,7 +117,7 @@ function inputListener() {
                 }
 
                 currentArr.push(e.key);
-                console.log(omegaArr);
+                console.table(omegaArr);
             }
         })();
 
@@ -138,7 +141,7 @@ function inputListener() {
 
                     currentArr.splice(0, currentArr.length);
                     currentArr.push(e.key);
-                    console.log(omegaArr);
+                    console.table(omegaArr);
                     return;
                 }
                 else if (currentArr.includes('+') ||
@@ -146,14 +149,14 @@ function inputListener() {
                 
                     currentArr.pop();
                     currentArr.push(e.key);
-                    console.log(omegaArr);
+                    console.table(omegaArr);
                     return;
                 }
                 else if (e.key === '-' &&
                         (currentArr.includes('*') || currentArr.includes('/'))) {
 
                     currentArr.push(e.key);
-                    console.log(omegaArr);
+                    console.table(omegaArr);
                     return;
                 }
                 else if (e.key !== '-' && 
@@ -161,12 +164,12 @@ function inputListener() {
 
                     currentArr.pop();
                     currentArr.push(e.key);
-                    console.log(omegaArr);
+                    console.table(omegaArr);
                     return;
                 }
                 
                 currentArr.push(e.key); // This only runs when a fresh, empty array is current
-                console.log(omegaArr);
+                console.table(omegaArr);
             }
         })();
 
@@ -177,6 +180,12 @@ function inputListener() {
                 e.preventDefault();
                 return;
             }
+            if (e.key === 'Backspace' &&
+                calcDisplayField.selectionStart < calcDisplayField.value.length) {
+
+                e.preventDefault(); // prevents deletion when those pesky users select field values
+                return;
+            }
             if (e.key === 'Backspace') {
                 currentArr.pop();
 
@@ -184,7 +193,7 @@ function inputListener() {
                     omegaArr.pop();
                     currentArr = omegaArr[omegaArr.length - 1];
                 }
-                console.log(omegaArr);
+                console.table(omegaArr);
             }
         })();
 
@@ -198,9 +207,46 @@ function inputListener() {
 function solveExpression() {
     calcDisplayContainer.addEventListener("submit", e => {
         e.preventDefault();
-        console.log('expression');
+
+        // Initializing the arrays needed for the expression evaluation
+        evalNumberArr.splice(0, evalNumberArr.length);
+        evalOperatorArr.splice(0, evalOperatorArr.length);
+        // deep cloning omegaArr allows for modification of the clone, ensuring
+        // omegaArr remains intact for a backspace input.
+        evalOmegaArr = structuredClone(omegaArr);
+        
+        negativeNumFixer();
+
+        console.log(evalOmegaArr);
     })
 }
+
+// essentially moves all the '-' in ['/', '-'] or ['*', '-'] to the 
+// front of the next number only array. Essentially just preparing for
+// parseInt.
+function negativeNumFixer() {
+    for (let i = 1; i < 3; i++) {
+        evalOmegaArr = evalOmegaArr.map((item, index, array) => {
+            if (i === 1 &&
+                containsNumbers(item) &&
+                containsOperators(array[index - 1]) &&
+                array[index - 1].length > 1) {
+
+                item.unshift('-');
+            }
+
+            if (i === 2 &&
+                containsOperators(item) &&
+                !containsNumbers(item) &&
+                item.length > 1) {
+
+                item.splice(item.indexOf('-'), 1);
+            }
+            return item;
+        })
+    } 
+}
+
 
 
 
