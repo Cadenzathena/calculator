@@ -8,6 +8,8 @@ const evalOperatorArr = [];
 const validNumbers = '0123456789';
 const validOperators = '-+*/';
 const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+let currentResult = 0;
+let initialOprLength = 0;
 
 // we are going to be checking for numbers and operators for
 // a bit. functions help reduce wordy syntax.
@@ -211,13 +213,77 @@ function solveExpression() {
         // Initializing the arrays needed for the expression evaluation
         evalNumberArr.splice(0, evalNumberArr.length);
         evalOperatorArr.splice(0, evalOperatorArr.length);
+
         // deep cloning omegaArr allows for modification of the clone, ensuring
         // omegaArr remains intact for a backspace input.
         evalOmegaArr = structuredClone(omegaArr);
         
         negativeNumFixer();
 
-        console.log(evalOmegaArr);
+        // preparing the number array
+        evalOmegaArr.map(item => {
+            if (containsNumbers(item)) {
+                evalNumberArr.push(parseFloat(item.join('')));
+            }
+        });
+        
+        // preparing the operator array
+        evalOmegaArr.map(item => {
+            if (containsOperators(item) && !containsNumbers(item)) {
+                evalOperatorArr.push(item.join(''));
+            }
+            initialOprLength = evalOperatorArr.length;
+        });
+
+    
+        // The general idea is to use a giant for loop to work on every operator
+        // in evalOperatorArr. We are using the position of evalNumberArr & evalOperatorArr
+        // items to do our evaluation, 
+        for (let i = 0; i < initialOprLength; i++) {
+
+            // this loop handles our operator BODMAS precedence. it starts with bodmasOpr as /,
+            // checking if our operators includes the "bodmasOpr" that must be solved for first.
+            // So if D doesn't exist, check for M, then check for A...
+            for (const bodmasOpr of ['/', '*']) {
+                if (!evalOperatorArr.includes(bodmasOpr)) {
+                    continue;
+                }
+
+                // couldn't use forEach or map because you can't early exit them with break statements.
+                // Had to use this fraudulent for...of loop to iterate through my array items AND declare my
+                // item indexes. Lame.
+                let index = 0;
+                for (const item of evalOperatorArr) {
+                    if (item === bodmasOpr) {
+                        let numValueA = evalNumberArr[index];
+                        let numValueB = evalNumberArr[index + 1];
+
+                        switch (item) {
+                            case '/': currentResult = numValueA / numValueB; break;
+                            case '*': currentResult = numValueA * numValueB; break;
+                            case '+': currentResult = numValueA + numValueB; break;
+                            case '-': currentResult = numValueA - numValueB; break;
+                        }
+                        evalNumberArr.splice(index, 2, currentResult);
+                        evalOperatorArr.splice(index, 1);
+
+                        console.log(currentResult);
+                        console.log(evalNumberArr, evalOperatorArr);
+                        index++;
+                        break; // "Do not iterate when process is done. Leave this loop"
+                    } else {
+                        index++;
+                        continue; // Keep checking the evalOperator array for a match with bodmasOpr
+                    }
+                }
+                // This peculiar break statement stops our precedence checker loop from iterating to
+                // its next bodmasOpr item. Why? Because only one of every operator would then get solved.
+                // After the break, our giant for loop will effectively "restart" its inner code.
+                break; 
+            }
+        }    
+
+        console.log(evalOmegaArr, evalNumberArr, evalOperatorArr);
     })
 }
 
