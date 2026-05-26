@@ -91,6 +91,11 @@ function inputSanitizer() {
             return;
         }
 
+        if ((e.key === 'v' || e.key === 'v') && e.ctrlKey) {
+            e.preventDefault();
+            return;
+        }
+
     })
 }
 
@@ -210,25 +215,19 @@ function solveExpression() {
     calcDisplayContainer.addEventListener("submit", e => {
         e.preventDefault();
 
-        // Initializing the arrays needed for the expression evaluation
-        evalNumberArr.splice(0, evalNumberArr.length);
+        evalNumberArr.splice(0, evalNumberArr.length); // Initializing the arrays needed for the expression evaluation
         evalOperatorArr.splice(0, evalOperatorArr.length);
-
-        // deep cloning omegaArr allows for modification of the clone, ensuring
-        // omegaArr remains intact for a backspace input.
-        evalOmegaArr = structuredClone(omegaArr);
+        evalOmegaArr = structuredClone(omegaArr); // deep clone to ensure omegaArr remains intact for a backspace input.
         
-        negativeNumFixer();
+        negativeNumFixer(evalOmegaArr);
 
-        // preparing the number array
-        evalOmegaArr.map(item => {
+        // preparing the number array and operator array
+        evalOmegaArr.forEach(item => {
             if (containsNumbers(item)) {
                 evalNumberArr.push(parseFloat(item.join('')));
             }
         });
-        
-        // preparing the operator array
-        evalOmegaArr.map(item => {
+        evalOmegaArr.forEach(item => {
             if (containsOperators(item) && !containsNumbers(item)) {
                 evalOperatorArr.push(item.join(''));
             }
@@ -243,15 +242,12 @@ function solveExpression() {
 
             // this loop handles our operator BODMAS precedence. it starts with bodmasOpr as /,
             // checking if our operators includes the "bodmasOpr" that must be solved for first.
-            // So if D doesn't exist, check for M, then check for A...
             for (const bodmasOpr of ['/', '*']) {
                 if (!evalOperatorArr.includes(bodmasOpr)) {
                     continue;
                 }
 
                 // couldn't use forEach or map because you can't early exit them with break statements.
-                // Had to use this fraudulent for...of loop to iterate through my array items AND declare my
-                // item indexes. Lame.
                 let index = 0;
                 for (const item of evalOperatorArr) {
                     if (item === bodmasOpr) {
@@ -281,36 +277,53 @@ function solveExpression() {
                 // After the break, our giant for loop will effectively "restart" its inner code.
                 break; 
             }
-        }    
-
+        }
+        
+        negativeNumFixer(evalNumberArr);
+        currentResult = evalNumberArr.reduce((prev, current) => prev + current, 0);
         console.log(evalOmegaArr, evalNumberArr, evalOperatorArr);
+        console.log(currentResult);
     })
 }
 
-// essentially moves all the '-' in ['/', '-'] or ['*', '-'] to the 
-// front of the next number only array. Essentially just preparing for
-// parseInt.
-function negativeNumFixer() {
-    for (let i = 1; i < 3; i++) {
-        evalOmegaArr = evalOmegaArr.map((item, index, array) => {
-            if (i === 1 &&
-                containsNumbers(item) &&
-                containsOperators(array[index - 1]) &&
-                array[index - 1].length > 1) {
 
-                item.unshift('-');
+
+
+
+function negativeNumFixer(thing) {
+    // Preparing for parseInt by moving all the '-' in ['/', '-'] or ['*', '-'] to the 
+    // front of the next number only array.
+    if (thing === evalOmegaArr) {
+        for (let i = 1; i < 3; i++) {
+            evalOmegaArr = evalOmegaArr.map((item, index, array) => {
+                if (i === 1 &&
+                    containsNumbers(item) &&
+                    containsOperators(array[index - 1]) &&
+                    array[index - 1].length > 1) {
+
+                    item.unshift('-');
+                }
+
+                if (i === 2 &&
+                    containsOperators(item) &&
+                    !containsNumbers(item) &&
+                    item.length > 1) {
+
+                    item.splice(item.indexOf('-'), 1);
+                }
+                return item;
+            })
+        }
+    }
+    // sets numbers to the right of minus signs to be negative numbers
+    else if (thing === evalNumberArr) {
+        evalOperatorArr.forEach((item, index) => {
+            if (item === '-') {
+                evalNumberArr.splice(index + 1, 0, evalNumberArr[index + 1] * -1);
+                evalNumberArr.splice(index + 2, 1);
             }
-
-            if (i === 2 &&
-                containsOperators(item) &&
-                !containsNumbers(item) &&
-                item.length > 1) {
-
-                item.splice(item.indexOf('-'), 1);
-            }
-            return item;
         })
-    } 
+    }
 }
 
 
