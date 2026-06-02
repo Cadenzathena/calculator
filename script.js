@@ -212,13 +212,21 @@ function inputListener() {
                     console.table(omegaArr);
                     return;
                 }
+
                 // Handles a situation where you input an operator immediately after a float point.
                 // This will get rid of the point and place the operator normally
-                else if (omegaArr[omegaArr.length - 2].join('').endsWith('.')) {
-                    omegaArr[omegaArr.length - 2].pop();
-                    currentArr.push(e.key);
-                    console.table(omegaArr);
-                    return;
+                if (omegaArr.length === 1) {
+                    // dumb check to prevent an error if the calc tries to search for
+                    // a non existent omegaArr[omegaArr.length - 2]
+                } 
+                else {                        
+                    if (omegaArr[omegaArr.length - 2].join('').endsWith('.')) {
+
+                        omegaArr[omegaArr.length - 2].pop();
+                        currentArr.push(e.key);
+                        console.table(omegaArr);
+                        return;
+                    }
                 }
                 
                 currentArr.push(e.key); // This only runs when a fresh, empty array is current
