@@ -9,7 +9,10 @@ const validNumbers = '0123456789';
 const validOperators = '-+*/';
 const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 let currentResult = 0;
-let initialOprLength = 0;
+const floatStates = {
+    currentlyNum: true,
+    floatPointPlaced: false
+}
 
 // we are going to be checking for numbers and operators for
 // a bit. functions help reduce wordy syntax.
@@ -40,7 +43,7 @@ function inputSanitizer() {
     calcDisplayField.addEventListener("input", e => {
         // Ensures the input field doesn't accept values that aren't
         // numbers or operators. Replaces * with × for aesthetics.
-        e.target.value = e.target.value.replace(/[^0-9+\-*×/]/g, ''); 
+        e.target.value = e.target.value.replace(/[^0-9+\-*.×/]/g, ''); 
         e.target.value = e.target.value.replace('*', '×');            
     })
 
@@ -60,7 +63,8 @@ function inputSanitizer() {
                 console.log('gotcha');
             }
             else if (calcDisplayField.value.endsWith('+') ||
-                     calcDisplayField.value.endsWith('-')) {
+                     calcDisplayField.value.endsWith('-') ||
+                     calcDisplayField.value.endsWith('.')) {
 
                 calcDisplayField.value = calcDisplayField.value.slice(0, -1);
                 console.log('gotcha');
@@ -72,6 +76,27 @@ function inputSanitizer() {
                 calcDisplayField.value = calcDisplayField.value.slice(0, -1);
                 console.log('gotcha');
             }
+        }
+
+        // Handles behaviour of inputting '.' in the input field
+        if (e.key === '.' &&
+            containsNumbers(currentArr) &&
+            !floatStates.floatPointPlaced) {
+
+            floatStates.floatPointPlaced = true;
+        }
+        else if (e.key === '.' &&
+                containsNumbers(currentArr) &&
+                floatStates.floatPointPlaced) {
+
+            e.preventDefault();
+            console.log('no multiple "." in a number!');
+        }
+        else if (e.key === '.' &&
+                containsOperators(currentArr)) {
+
+            e.preventDefault();
+            console.log('no "." after operators!');
         }
 
         // if the user trys to input a value when the cursor isn't at the end,
@@ -92,7 +117,7 @@ function inputSanitizer() {
         }
 
         if ((e.key === 'v' || e.key === 'v') && e.ctrlKey) {
-            e.preventDefault();
+            e.preventDefault(); // prevents pasting
             return;
         }
 
@@ -114,14 +139,27 @@ function inputListener() {
         }
 
         // Checks if the key pressed is a number and pushes the value to the last array in
-        // omegaArr. Also check if the most recent array in omegaArr contains an
-        // operator. True? generate a new array for only numbers.
+        // omegaArr. Only does this if the input field is not selected. Also checks if the most
+        // recent array in omegaArr contains an operator. True? generate a new array for only numbers.
         (function digitLogger() {
-            if (containsNumbers(e.key)) {
+            if (containsNumbers(e.key) &&
+                calcDisplayField.selectionStart < calcDisplayField.value.length === false) {
                 if (containsOperators(currentArr)) {
                     omegaArr.push([]);
                     currentArr = omegaArr[omegaArr.length - 1];
+                    floatStates.floatPointPlaced = false;
                 }
+
+                currentArr.push(e.key);
+                console.table(omegaArr);
+            }
+        })();
+
+        // Adds float points to the current number array
+        (function floatPointLogger() {
+            if (e.key === '.' &&
+                containsNumbers(currentArr) &&
+                !currentArr.includes('.')) {
 
                 currentArr.push(e.key);
                 console.table(omegaArr);
@@ -174,6 +212,14 @@ function inputListener() {
                     console.table(omegaArr);
                     return;
                 }
+                // Handles a situation where you input an operator immediately after a float point.
+                // This will get rid of the point and place the operator normally
+                else if (omegaArr[omegaArr.length - 2].join('').endsWith('.')) {
+                    omegaArr[omegaArr.length - 2].pop();
+                    currentArr.push(e.key);
+                    console.table(omegaArr);
+                    return;
+                }
                 
                 currentArr.push(e.key); // This only runs when a fresh, empty array is current
                 console.table(omegaArr);
@@ -183,24 +229,27 @@ function inputListener() {
         // Deletes array items. Also helps clean up arrays in
         // omegaArr if they're empty after deletion
         (function backspaceHelper() {
-            if (e.key === 'Backspace' && e.ctrlKey) {
-                e.preventDefault();
-                return;
-            }
-            if (e.key === 'Backspace' &&
-                calcDisplayField.selectionStart < calcDisplayField.value.length) {
-
-                e.preventDefault(); // prevents deletion when those pesky users select field values
-                return;
-            }
             if (e.key === 'Backspace') {
-                currentArr.pop();
-
-                if (!currentArr.length) {
-                    omegaArr.pop();
-                    currentArr = omegaArr[omegaArr.length - 1];
+                if (e.ctrlKey || calcDisplayField.selectionStart < calcDisplayField.value.length) {
+                    e.preventDefault(); // prevents select or control key deletion
+                    return
                 }
-                console.table(omegaArr);
+                else {
+                    currentArr.pop();
+
+                    if (!currentArr.length) {
+                        omegaArr.pop(); // if the currentArr is empty, get rid of it and assign the new "current array"
+                        currentArr = omegaArr[omegaArr.length - 1];
+                    }
+
+                    // sets the floatPointPlaced property after deletion
+                    if (containsNumbers(currentArr) && currentArr.includes('.')) {
+                        floatStates.floatPointPlaced = true;
+                    } else {
+                        floatStates.floatPointPlaced = false;
+                    }
+                    console.table(omegaArr);
+                }
             }
         })();
 
@@ -231,8 +280,8 @@ function solveExpression() {
             if (containsOperators(item) && !containsNumbers(item)) {
                 evalOperatorArr.push(item.join(''));
             }
-            initialOprLength = evalOperatorArr.length;
         });
+        let initialOprLength = evalOperatorArr.length;
 
     
         // The general idea is to use a giant for loop to work on every operator
