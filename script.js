@@ -1,5 +1,5 @@
-const calcDisplayField = document.querySelector("#calc-display-field");
-const calcDisplayContainer = document.querySelector("#calc-display-container");
+const calcScreenField = document.querySelector("#calc-screen-field");
+const calcScreenContainer = document.querySelector("#calc-screen-container");
 const omegaArr = [];
 let evalOmegaArr = [];
 let currentArr = [];
@@ -40,14 +40,14 @@ function containsOperators(item) {
 
 function inputSanitizer() {
 
-    calcDisplayField.addEventListener("input", e => {
+    calcScreenField.addEventListener("input", e => {
         // Ensures the input field doesn't accept values that aren't
         // numbers or operators. Replaces * with × for aesthetics.
         e.target.value = e.target.value.replace(/[^0-9+\-*.×/]/g, ''); 
         e.target.value = e.target.value.replace('*', '×');            
     })
 
-    calcDisplayField.addEventListener("keydown", e => {
+    calcScreenField.addEventListener("keydown", e => {
         if (e.target.value === '0' && containsNumbers(e.key)) {
 
             e.target.value = e.target.value.replace('0', ''); // get rid of initial 0 if a number is pressed
@@ -56,24 +56,24 @@ function inputSanitizer() {
         // Handles operator behaviour in the input field. Things like preventing
         // multiple operators except for *- and /-
         if (containsOperators(e.key)) {
-            if (calcDisplayField.value.endsWith('×-') ||
-                calcDisplayField.value.endsWith('/-')) {
+            if (calcScreenField.value.endsWith('×-') ||
+                calcScreenField.value.endsWith('/-')) {
 
-                calcDisplayField.value = calcDisplayField.value.slice(0, -2);
+                calcScreenField.value = calcScreenField.value.slice(0, -2);
                 console.log('gotcha');
             }
-            else if (calcDisplayField.value.endsWith('+') ||
-                     calcDisplayField.value.endsWith('-') ||
-                     calcDisplayField.value.endsWith('.')) {
+            else if (calcScreenField.value.endsWith('+') ||
+                     calcScreenField.value.endsWith('-') ||
+                     calcScreenField.value.endsWith('.')) {
 
-                calcDisplayField.value = calcDisplayField.value.slice(0, -1);
+                calcScreenField.value = calcScreenField.value.slice(0, -1);
                 console.log('gotcha');
             }
             else if (e.key !== '-' &&
-                    (calcDisplayField.value.endsWith('×') ||
-                     calcDisplayField.value.endsWith('/'))) {
+                    (calcScreenField.value.endsWith('×') ||
+                     calcScreenField.value.endsWith('/'))) {
                 
-                calcDisplayField.value = calcDisplayField.value.slice(0, -1);
+                calcScreenField.value = calcScreenField.value.slice(0, -1);
                 console.log('gotcha');
             }
         }
@@ -102,16 +102,16 @@ function inputSanitizer() {
         // if the user trys to input a value when the cursor isn't at the end,
         // send their cursor to the end and halt. Not trying to deal with custom array insertion
         // shenanigans
-        if (calcDisplayField.selectionStart === calcDisplayField.value.length &&
+        if (calcScreenField.selectionStart === calcScreenField.value.length &&
             e.key.split().some(item => arrowKeys.includes(item))) {
             
             e.preventDefault();
             console.log('Arrow catch!');
             return;
         }
-        else if (calcDisplayField.selectionStart < calcDisplayField.value.length) {
+        else if (calcScreenField.selectionStart < calcScreenField.value.length) {
             e.preventDefault();
-            calcDisplayField.setSelectionRange(calcDisplayField.value.length, calcDisplayField.value.length);
+            calcScreenField.setSelectionRange(calcScreenField.value.length, calcScreenField.value.length);
             console.log('YAHTZEE');
             return;
         }
@@ -131,7 +131,7 @@ function inputSanitizer() {
 // handles various actions when an input is made with the input field in focus.
 function inputListener() {
 
-    calcDisplayField.addEventListener("keydown", (e) => {
+    calcScreenField.addEventListener("keydown", (e) => {
         // create a new array in omegaArr if it is empty!
         if (!omegaArr.length) {
             omegaArr.push([]);
@@ -143,7 +143,7 @@ function inputListener() {
         // recent array in omegaArr contains an operator. True? generate a new array for only numbers.
         (function digitLogger() {
             if (containsNumbers(e.key) &&
-                calcDisplayField.selectionStart < calcDisplayField.value.length === false) {
+                calcScreenField.selectionStart < calcScreenField.value.length === false) {
                 if (containsOperators(currentArr)) {
                     omegaArr.push([]);
                     currentArr = omegaArr[omegaArr.length - 1];
@@ -238,7 +238,7 @@ function inputListener() {
         // omegaArr if they're empty after deletion
         (function backspaceHelper() {
             if (e.key === 'Backspace') {
-                if (e.ctrlKey || calcDisplayField.selectionStart < calcDisplayField.value.length) {
+                if (e.ctrlKey || calcScreenField.selectionStart < calcScreenField.value.length) {
                     e.preventDefault(); // prevents select or control key deletion
                     return
                 }
@@ -269,7 +269,7 @@ function inputListener() {
 
 
 function solveExpression() {
-    calcDisplayContainer.addEventListener("submit", e => {
+    calcScreenContainer.addEventListener("submit", e => {
         e.preventDefault();
 
         evalNumberArr.splice(0, evalNumberArr.length); // Initializing the arrays needed for the expression evaluation

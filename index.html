@@ -4,14 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
+    <link href="style.css" rel="stylesheet"/>
     <script defer src="script.js"></script>
 </head>
 <body>
-    <form id = "calc-display-container">
-        <input
-        type = "text"
-        id = "calc-display-field"
-        value = "0" />
-    </form>
+    <div id = "calc-shell">
+        <div id = "calc-inner-container">
+
+            <form id = "calc-screen-container">
+                <input
+                type = "text"
+                id = "calc-screen-field"
+                value = "0" />
+            </form>
+
+            <div id = "calc-button-container">
+                <button>BACKSPACE</button>
+                <button>C</button>                
+            </div>
+
+        </div>
+    </div>
 </body>
 </html>
